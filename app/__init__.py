@@ -28,6 +28,7 @@ def create_app():
     
     with app.app_context():
         db.create_all()
+        line_service.create_rich_menu()  # 創建 Rich Menu
     
     @app.route('/')
     def home():

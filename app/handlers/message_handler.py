@@ -107,6 +107,10 @@ class MessageHandler:
     def _handle_text_message(self, event, user, user_id):
         message_text = event.message.text
         
+        if message_text == "選單":
+            self.line_service.send_main_menu(event.reply_token)
+            return
+        
         if message_text in ["上班打卡", "下班打卡"]:
             # 檢查公司是否啟用定位服務
             if user.company.location_service_enabled:
@@ -128,13 +132,13 @@ class MessageHandler:
                     )
                 self.line_service.send_text_message(event.reply_token, response)
         elif message_text == "查詢打卡":
-            response = self.attendance_service.get_attendance_record(user_id)
-            self.line_service.send_text_message(event.reply_token, response)
+            records, error = self.attendance_service.get_attendance_record(user_id)
+            if error:
+                self.line_service.send_text_message(event.reply_token, error)
+            else:
+                self.line_service.send_attendance_record(event.reply_token, records)
         else:
-            self.line_service.send_text_message(
-                event.reply_token,
-                "請輸入：上班打卡、下班打卡 或 查詢打卡"
-            )
+            self.line_service.send_main_menu(event.reply_token)
 
 # 創建全局實例
 message_handler = MessageHandler()

@@ -22,7 +22,7 @@ class AttendanceService:
         ).first()
         
         if existing_record:
-            return "您已經打過上班卡了！"
+            return "您已經打過上班卡了！"  # 直接返回通知，不再請求定位
 
         # 檢查公司是否啟用定位服務
         if user.company.location_service_enabled:
@@ -59,7 +59,7 @@ class AttendanceService:
         ).first()
         
         if not existing_record:
-            return "您尚未打上班卡！"
+            return "您尚未打上班卡！"  # 直接返回通知，不再請求定位
 
         # 檢查公司是否啟用定位服務
         if user.company.location_service_enabled:
@@ -81,18 +81,10 @@ class AttendanceService:
         """獲取打卡記錄"""
         user = User.query.filter_by(line_user_id=line_user_id).first()
         if not user:
-            return "用戶不存在"
+            return None, "用戶不存在"
 
         records = Attendance.query.filter_by(user_id=user.id).order_by(Attendance.date.desc()).limit(7).all()
         if not records:
-            return "沒有打卡記錄。"
+            return None, "沒有打卡記錄。"
         
-        response = "您的打卡記錄如下：\n"
-        for record in records:
-            response += f"- 日期：{record.date}\n"
-            response += f"  上班：{record.clock_in_time.strftime('%H:%M:%S')}"
-            if record.clock_out_time:
-                response += f"\n  下班：{record.clock_out_time.strftime('%H:%M:%S')}"
-            response += "\n"
-        
-        return response
+        return records, None  # 返回記錄和錯誤信息
