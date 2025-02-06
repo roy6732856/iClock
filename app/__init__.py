@@ -1,6 +1,7 @@
 from flask import Flask, request, abort
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
+from flask_cors import CORS
 from app.config import Config
 from linebot import WebhookHandler
 from linebot.exceptions import InvalidSignatureError
@@ -22,6 +23,34 @@ migrate = Migrate()
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
+    
+    # 啟用 CORS
+    CORS(app, 
+        resources={
+            r"/api/*": {
+                "origins": ["http://localhost:8080", "http://127.0.0.1:8080", 
+                           "http://localhost:5173", "http://127.0.0.1:5173",
+                           "http://localhost:8000", "http://127.0.0.1:8000"],
+                "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+                "allow_headers": ["Content-Type", "Authorization"],
+                "supports_credentials": True,
+                "expose_headers": ["Authorization"],
+                "max_age": 600
+            }
+        },
+        supports_credentials=True
+    )
+
+    # 添加 CORS headers 到所有回應
+    @app.after_request
+    def after_request(response):
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Requested-With')  # 添加更多允許的 headers
+        response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
+        # 明確設置 Content-Type
+        if request.method == 'OPTIONS':
+            response.headers['Content-Type'] = 'application/json'
+        return response
     
     # 初始化數據庫
     db.init_app(app)
