@@ -17,5 +17,5 @@ config.set_main_option('sqlalchemy.url',
     f"{os.getenv('POSTGRES_HOST')}/{os.getenv('POSTGRES_DB')}")
 
 # 添加模型的 metadata
-from app.models.attendance import Base
-target_metadata = Base.metadata 
+from app.utils.database import db
+target_metadata = db.metadata

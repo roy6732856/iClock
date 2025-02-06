@@ -12,6 +12,7 @@ from app.models.company import Company
 from app.models.attendance import Attendance
 from app.utils.database import db
 from app.services.line_service import LineService
+from app.routes.auth import auth_bp
 
 # 初始化服務
 line_service = LineService(os.getenv('LINE_CHANNEL_ACCESS_TOKEN'))
@@ -25,6 +26,9 @@ def create_app():
     # 初始化數據庫
     db.init_app(app)
     migrate.init_app(app, db)
+    
+    # 註冊 auth blueprint
+    app.register_blueprint(auth_bp, url_prefix='/api/auth')
     
     with app.app_context():
         db.create_all()
